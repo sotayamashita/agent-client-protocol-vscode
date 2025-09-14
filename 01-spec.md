@@ -19,17 +19,17 @@ graph TB
         EXTENSION["ACP Extension"]
         UI["Extension UI"]
     end
-    
+
     subgraph "Agent Process"
         AGENT["AI Agent"]
         LLM["Language Model"]
     end
-    
+
     subgraph "Communication Layer"
         JSONRPC["JSON-RPC 2.0"]
         STDIO["stdin/stdout"]
     end
-    
+
     VSCODE --> EXTENSION
     EXTENSION --> UI
     EXTENSION <-->|JSON-RPC| JSONRPC
@@ -49,7 +49,7 @@ ACPはJSON-RPC 2.0を使用し、stdin/stdoutを通じて通信します [3](#1-
 ### メッセージタイプ
 
 - **Methods**: レスポンスを期待するリクエスト・レスポンスペア
-- **Notifications**: レスポンスを期待しない一方向メッセージ [4](#1-3) 
+- **Notifications**: レスポンスを期待しない一方向メッセージ [4](#1-3)
 
 ## TypeScript実装参考
 
@@ -58,16 +58,16 @@ ACPはJSON-RPC 2.0を使用し、stdin/stdoutを通じて通信します [3](#1-
 TypeScript実装では、`ClientSideConnection`クラスがクライアント側の接続を管理します [5](#1-4) 。
 また、エージェント側の接続は`AgentSideConnection`クラスで提供されています（エージェント->クライアント方向） [5](#1-4) 。
 
-```typescript
+````typescript
 export class ClientSideConnection implements Agent {
   #connection: Connection;
-  
+
   constructor(
     toClient: (agent: Agent) => Client,
     input: WritableStream<Uint8Array>,
     output: ReadableStream<Uint8Array>,
   )
-``` [6](#1-5) 
+``` [6](#1-5)
 
 ```typescript
 export class AgentSideConnection {
@@ -78,13 +78,13 @@ export class AgentSideConnection {
     input: WritableStream<Uint8Array>,
     output: ReadableStream<Uint8Array>,
   )
-```
+````
 
 ### インターフェース定義
 
 #### Agent インターフェース
 
-```typescript
+````typescript
 export interface Agent {
   initialize(params: schema.InitializeRequest): Promise<schema.InitializeResponse>;
   newSession(params: schema.NewSessionRequest): Promise<schema.NewSessionResponse>;
@@ -93,7 +93,7 @@ export interface Agent {
   prompt(params: schema.PromptRequest): Promise<schema.PromptResponse>;
   cancel(params: schema.CancelNotification): Promise<void>;
 }
-``` [7](#1-6) 
+``` [7](#1-6)
 
 #### Client インターフェース
 
@@ -104,7 +104,7 @@ export interface Client {
   writeTextFile(params: schema.WriteTextFileRequest): Promise<schema.WriteTextFileResponse>;
   readTextFile(params: schema.ReadTextFileRequest): Promise<schema.ReadTextFileResponse>;
 }
-``` [8](#1-7) 
+``` [8](#1-7)
 
 ## VSCode拡張機能実装要件
 
@@ -118,37 +118,43 @@ import { ClientSideConnection, Agent, Client } from '@zed-industries/agent-clien
 export function activate(context: vscode.ExtensionContext) {
     // 拡張機能の初期化
 }
-```
+````
 
 ### 2. プロセス管理
 
 エージェントをサブプロセスとして起動し、stdio通信を確立する必要があります [2](#1-1) 。
 
-参考実装（Rust例）: [9](#1-8) 
+参考実装（Rust例）: [9](#1-8)
 
 推奨（VS Code 実装指針 / DeepWiki: microsoft/vscode）:
+
 - `node:child_process.spawn` を用いてエージェントを起動し、`stdio: ['pipe', 'pipe', 'inherit']` で標準入出力を確保
 - 終了・エラーを購読し、拡張の deactivate/破棄時にプロセスを確実に終了（必要ならプロセスツリーごと kill）
 - `session/cancel` はプロセス終了ではなく JSON-RPC の `session/cancel` 通知で実装（プロンプト単位の中断）
 
 例（Claude Code を外部実行ファイルとして起動する想定）:
+
 ```typescript
-import { spawn } from 'node:child_process';
-import { Readable, Writable } from 'node:stream';
-import type { ReadableStream, WritableStream } from 'node:stream/web';
+import { spawn } from "node:child_process";
+import { Readable, Writable } from "node:stream";
+import type { ReadableStream, WritableStream } from "node:stream/web";
 
 // 設定から取得したエージェント実行パス/引数/環境変数
-const child = spawn(agentPath /* 例: /Users/sotayamashita/.claude/local/claude */, agentArgs, {
-  stdio: ['pipe', 'pipe', 'inherit'],
-  // 機密は OS 環境変数や VS Code SecretStorage から供給し、settings.json に保存しない
-  // 本環境では追加の環境変数は不要
-  env: { ...process.env },
-});
+const child = spawn(
+  agentPath /* 例: /Users/sotayamashita/.claude/local/claude */,
+  agentArgs,
+  {
+    stdio: ["pipe", "pipe", "inherit"],
+    // 機密は OS 環境変数や VS Code SecretStorage から供給し、settings.json に保存しない
+    // 本環境では追加の環境変数は不要
+    env: { ...process.env },
+  },
+);
 
-child.on('exit', (code, signal) => {
+child.on("exit", (code, signal) => {
   // ログと後始末
 });
-child.on('error', (err) => {
+child.on("error", (err) => {
   // エラーハンドリング
 });
 
@@ -160,7 +166,7 @@ const fromAgent: ReadableStream<Uint8Array> = Readable.toWeb(child.stdout!);
 
 #### 3.1 プロトコル初期化
 
-```typescript
+````typescript
 const initializeRequest = {
   protocolVersion: 1,
   clientCapabilities: {
@@ -170,7 +176,7 @@ const initializeRequest = {
     }
   }
 };
-``` [10](#1-9) 
+``` [10](#1-9)
 
 #### 3.2 セッション作成
 
@@ -181,7 +187,7 @@ const sessionRequest = {
   mcpServers: [],
   cwd: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || process.cwd()
 };
-```
+````
 
 ### 4. メッセージハンドリング
 
@@ -195,9 +201,11 @@ interface PermissionItem extends vscode.QuickPickItem {
 }
 
 class VSCodeClient implements Client {
-  async requestPermission(params: RequestPermissionRequest): Promise<RequestPermissionResponse> {
+  async requestPermission(
+    params: RequestPermissionRequest,
+  ): Promise<RequestPermissionResponse> {
     // ユーザーに許可を求めるダイアログを表示
-    const items: PermissionItem[] = params.options.map(option => ({
+    const items: PermissionItem[] = params.options.map((option) => ({
       label: option.name,
       description: option.description,
       optionId: option.optionId,
@@ -215,24 +223,32 @@ class VSCodeClient implements Client {
     // UI更新、プログレス表示など
   }
 
-  async writeTextFile(params: WriteTextFileRequest): Promise<WriteTextFileResponse> {
+  async writeTextFile(
+    params: WriteTextFileRequest,
+  ): Promise<WriteTextFileResponse> {
     // ファイル書き込み処理
     const uri = vscode.Uri.file(params.path);
-    await vscode.workspace.fs.writeFile(uri, Buffer.from(params.content, 'utf8'));
+    await vscode.workspace.fs.writeFile(
+      uri,
+      Buffer.from(params.content, "utf8"),
+    );
     // WriteTextFileResponse は null を返す仕様（JSON-RPC result: null）
     return null;
   }
 
-  async readTextFile(params: ReadTextFileRequest): Promise<ReadTextFileResponse> {
+  async readTextFile(
+    params: ReadTextFileRequest,
+  ): Promise<ReadTextFileResponse> {
     // ファイル読み込み処理
     const uri = vscode.Uri.file(params.path);
     const content = await vscode.workspace.fs.readFile(uri);
-    return { content: content.toString('utf8') };
+    return { content: content.toString("utf8") };
   }
 }
 ```
 
 補足（DeepWiki 確認済み）:
+
 - WriteTextFileResponse は `null`、ReadTextFileResponse は `{ content: string }`
 - ReadTextFileRequest は `path`(abs), `line?`, `limit?` を含む（`line`/`limit` は任意）
 - RequestPermissionResponse は `{ outcome: { outcome: 'selected'|'cancelled', optionId? } }`
@@ -242,7 +258,7 @@ class VSCodeClient implements Client {
 - Claude（Anthropic）系バックエンド利用時は `ANTHROPIC_API_KEY` 等の環境変数が必要となる場合があります。
 - 機密は OS 環境変数や VS Code Secret Storage を用い、`settings.json` に保存しない方針とします。
 - 子プロセス起動時に `env` 経由で注入します。
- - 本環境では API キーは不要です。
+- 本環境では API キーは不要です。
 
 ### 5. ストリーム管理
 
@@ -251,8 +267,8 @@ VS Code の拡張ホストは近年の安定版 (1.88+) で Node.js 22 系を採
 
 ```typescript
 // 推奨: Node の toWeb を使って変換（バックプレッシャー考慮）
-import { Readable, Writable } from 'node:stream';
-import type { ReadableStream, WritableStream } from 'node:stream/web';
+import { Readable, Writable } from "node:stream";
+import type { ReadableStream, WritableStream } from "node:stream/web";
 
 const input: WritableStream<Uint8Array> = Writable.toWeb(agentProcess.stdin!);
 const output: ReadableStream<Uint8Array> = Readable.toWeb(agentProcess.stdout!);
@@ -268,6 +284,7 @@ const output: ReadableStream<Uint8Array> = Readable.toWeb(agentProcess.stdout!);
 ```
 
 注意:
+
 - VS Code Web（ブラウザ版）では `child_process` は利用できません。デスクトップ版を対象とし、Web 対応が必要な場合は別経路（Remote 連携やサーバー経由など）を検討してください。
 
 ### 6. エラーハンドリング
@@ -293,10 +310,10 @@ try {
 sequenceDiagram
     participant VSCode as "VSCode Extension"
     participant Agent as "AI Agent"
-    
+
     VSCode->>Agent: initialize(protocolVersion, capabilities)
     Agent-->>VSCode: InitializeResponse(capabilities, authMethods)
-    
+
     opt Authentication Required
         VSCode->>Agent: authenticate(methodId)
         Agent-->>VSCode: AuthenticateResponse
@@ -309,7 +326,7 @@ sequenceDiagram
 sequenceDiagram
     participant VSCode as "VSCode Extension"
     participant Agent as "AI Agent"
-    
+
     VSCode->>Agent: session/new(workingDirectory, mcpServers)
     Agent-->>VSCode: NewSessionResponse(sessionId)
 ```
@@ -321,16 +338,16 @@ sequenceDiagram
     participant User as "User"
     participant VSCode as "VSCode Extension"
     participant Agent as "AI Agent"
-    
+
     User->>VSCode: Send prompt
     VSCode->>Agent: session/prompt(sessionId, prompt)
-    
+
     loop Real-time Updates
         Agent->>VSCode: session/update(messageChunks)
         Agent->>VSCode: session/request_permission(toolDetails)
         VSCode-->>Agent: PermissionResponse(granted/denied)
     end
-    
+
     Agent-->>VSCode: PromptResponse(stopReason)
     VSCode->>User: Display results
 ```
@@ -387,46 +404,38 @@ sequenceDiagram
   "name": "acp-vscode",
   "main": "./out/extension.js",
   "engines": { "vscode": "^1.88.0" },
-  "activationEvents": [
-    "onStartupFinished",
-    "onCommand:acp.connect"
-  ],
+  "activationEvents": ["onStartupFinished", "onCommand:acp.connect"],
   "contributes": {
-    "commands": [
-      { "command": "acp.connect", "title": "ACP: Connect Agent" }
-    ],
+    "commands": [{ "command": "acp.connect", "title": "ACP: Connect Agent" }],
     "configuration": {
       "title": "ACP",
       "properties": {
         "acp.agentPath": {
           "type": "string",
           "description": "Claude Code (ACP) の実行パス（例: /Users/sotayamashita/.claude/local/claude）",
-          "scope": "machine"
+          "scope": "machine",
         },
         "acp.agentArgs": {
           "type": "array",
           "description": "エージェント起動引数",
           "items": { "type": "string" },
-          "default": []
+          "default": [],
         },
         "acp.mcpServers": {
           "type": "array",
           "description": "MCP サーバー設定（必要に応じて）",
           "items": { "type": "object" },
-          "default": []
-        }
-      }
-    }
+          "default": [],
+        },
+      },
+    },
   },
   "capabilities": {
     "untrustedWorkspaces": {
       "supported": "limited",
-      "restrictedConfigurations": [
-        "acp.agentPath",
-        "acp.agentArgs"
-      ]
-    }
-  }
+      "restrictedConfigurations": ["acp.agentPath", "acp.agentArgs"],
+    },
+  },
 }
 ```
 
@@ -459,20 +468,23 @@ sequenceDiagram
 ## 実装例参考
 
 Rust実装の例を参考にしてください:
-- クライアント例: [15](#1-14) 
-- 接続設定: [16](#1-15) 
+
+- クライアント例: [15](#1-14)
+- 接続設定: [16](#1-15)
 
 ## Notes
 
 この仕様書は、Agent Client Protocolの公式TypeScript実装を基に作成されています。実装時は最新のプロトコル仕様とTypeScriptライブラリのドキュメントを参照してください。ACPは現在開発中のプロトコルのため、将来的な変更に対応できる柔軟な設計を心がけてください。
 
 補足（VS Code 実装観点の確認事項）：
+
 - 拡張ホストでの子プロセス起動（`child_process.spawn/exec`）は許可されており、多数の組込み拡張で利用実績あり。
 - ストリームは `Readable.toWeb`/`Writable.toWeb` で Web Streams に変換するのが推奨。
 - `vscode.workspace.fs` はローカル/リモート双方で `vscode.Uri` を介して透過的に動作。エンコーディングは `TextEncoder/Decoder`（または VS Code 設定の `files.encoding`）を考慮。
 - QuickPick は `QuickPickItem` を拡張してカスタムフィールドを持たせる（例：`optionId`）。
 
 Wiki pages you might want to explore:
+
 - https://deepwiki.com/zed-industries/agent-client-protocol
 - https://deepwiki.com/zed-industries/agent-client-protocol#3
 - https://deepwiki.com/zed-industries/agent-client-protocol#4
@@ -482,32 +494,38 @@ Wiki pages you might want to explore:
 ### Citations
 
 **File:** docs/overview/introduction.mdx (L6-6)
+
 ```text
 The Agent Client Protocol standardizes communication between code editors (IDEs, text-editors, etc.) and coding agents (programs that use generative AI to autonomously modify code).
 ```
 
 **File:** docs/overview/architecture.mdx (L18-18)
+
 ```text
 When the user tries to connect to an agent, the editor boots the agent sub-process on demand, and all communication happens over stdin/stdout.
 ```
 
 **File:** docs/protocol/overview.mdx (L10-10)
+
 ```text
 The protocol follows the [JSON-RPC 2.0](https://www.jsonrpc.org/specification) specification with two types of messages:
 ```
 
 **File:** docs/protocol/overview.mdx (L12-13)
+
 ```text
 - **Methods**: Request-response pairs that expect a result or error
 - **Notifications**: One-way messages that don't expect a response
 ```
 
 **File:** docs/protocol/overview.mdx (L141-141)
+
 ```text
 - All file paths in the protocol **MUST** be absolute.
 ```
 
 **File:** docs/protocol/overview.mdx (L146-150)
+
 ```text
 All methods follow standard JSON-RPC 2.0 [error handling](https://www.jsonrpc.org/specification#error_object):
 
@@ -517,16 +535,19 @@ All methods follow standard JSON-RPC 2.0 [error handling](https://www.jsonrpc.or
 ```
 
 **File:** typescript/acp.ts (L5-5)
+
 ```typescript
 import { WritableStream, ReadableStream } from "node:stream/web";
 ```
 
 **File:** typescript/acp.ts (L238-238)
+
 ```typescript
 export class ClientSideConnection implements Agent {
 ```
 
 **File:** typescript/acp.ts (L253-257)
+
 ```typescript
   constructor(
     toClient: (agent: Agent) => Client,
@@ -536,6 +557,7 @@ export class ClientSideConnection implements Agent {
 ```
 
 **File:** typescript/acp.ts (L17-24)
+
 ```typescript
 export class AgentSideConnection {
   #connection: Connection;
@@ -548,6 +570,7 @@ export class AgentSideConnection {
 ```
 
 **File:** typescript/acp.ts (L757-843)
+
 ```typescript
 export interface Client {
   /**
@@ -639,6 +662,7 @@ export interface Client {
 ```
 
 **File:** typescript/acp.ts (L851-937)
+
 ```typescript
 export interface Agent {
   /**
@@ -730,6 +754,7 @@ export interface Agent {
 ```
 
 **File:** rust/example_client.rs (L19-98)
+
 ```rust
 struct ExampleClient {}
 
@@ -814,6 +839,7 @@ impl acp::Client for ExampleClient {
 ```
 
 **File:** rust/example_client.rs (L107-117)
+
 ```rust
             let mut child = tokio::process::Command::new(program)
                 .args(args.iter())
@@ -829,6 +855,7 @@ impl acp::Client for ExampleClient {
 ```
 
 **File:** rust/example_client.rs (L125-135)
+
 ```rust
     let local_set = tokio::task::LocalSet::new();
     local_set
@@ -844,6 +871,7 @@ impl acp::Client for ExampleClient {
 ```
 
 **File:** docs/protocol/initialization.mdx (L31-46)
+
 ```json
 {
   "jsonrpc": "2.0",

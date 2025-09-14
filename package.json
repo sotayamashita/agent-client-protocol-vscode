@@ -1,27 +1,18 @@
 {
   "name": "acp-vscode",
   "displayName": "ACP VS Code",
-  "description": "Agent Client Protocol (ACP) client for VS Code.",
   "version": "0.0.1",
   "private": true,
-  "main": "./out/src/extension.js",
-  "engines": {
-    "vscode": "^1.88.0"
-  },
+  "description": "Agent Client Protocol (ACP) client for VS Code.",
   "categories": [
     "Other"
   ],
-  "activationEvents": [
-    "onStartupFinished",
-    "onCommand:acp.connect",
-    "onCommand:acp.prompt",
-    "onCommand:acp.cancel",
-    "onCommand:acp.setAgentPath",
-    "onCommand:acp.disconnect",
-    "onCommand:acp.reconnect",
-    "onCommand:acp.setAgentArgs",
-    "onCommand:acp.showConfig"
-  ],
+  "main": "./out/src/extension.js",
+  "scripts": {
+    "build": "tsc -p .",
+    "compile": "pnpm run build",
+    "watch": "tsc -watch -p ."
+  },
   "contributes": {
     "commands": [
       {
@@ -86,6 +77,32 @@
       }
     }
   },
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:acp.connect",
+    "onCommand:acp.prompt",
+    "onCommand:acp.cancel",
+    "onCommand:acp.setAgentPath",
+    "onCommand:acp.disconnect",
+    "onCommand:acp.reconnect",
+    "onCommand:acp.setAgentArgs",
+    "onCommand:acp.showConfig"
+  ],
+  "dependencies": {
+    "@zed-industries/agent-client-protocol": "^0.2.3",
+    "zod": "^4.1.8"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.3",
+    "@types/vscode": "^1.88.0",
+    "prettier": "^3.6.2",
+    "prettier-plugin-organize-imports": "^4.2.0",
+    "prettier-plugin-packagejson": "^2.5.19",
+    "typescript": "^5.9.2"
+  },
+  "engines": {
+    "vscode": "^1.88.0"
+  },
   "capabilities": {
     "untrustedWorkspaces": {
       "supported": "limited",
@@ -94,19 +111,5 @@
         "acp.agentArgs"
       ]
     }
-  },
-  "scripts": {
-    "build": "tsc -p .",
-    "watch": "tsc -watch -p .",
-    "compile": "pnpm run build"
-  },
-  "dependencies": {
-    "@zed-industries/agent-client-protocol": "^0.2.3",
-    "zod": "^4.1.8"
-  },
-  "devDependencies": {
-    "@types/node": "^24.3.3",
-    "@types/vscode": "^1.88.0",
-    "typescript": "^5.9.2"
   }
 }

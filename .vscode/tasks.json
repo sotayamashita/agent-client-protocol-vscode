@@ -7,10 +7,7 @@
       "command": "pnpm",
       "args": ["run", "build"],
       "group": "build",
-      "problemMatcher": [
-        "$tsc"
-      ]
+      "problemMatcher": ["$tsc"]
     }
   ]
 }
-
