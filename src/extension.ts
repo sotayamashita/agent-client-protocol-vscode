@@ -8,7 +8,7 @@ import { spawn, type ChildProcess } from "node:child_process";
 import * as path from "node:path";
 import { Readable, Writable } from "node:stream";
 import * as vscode from "vscode";
-// Bundle the ACP TS source directly via tsup/esbuild.
+// Bundle the ACP TS source directly via tsdown/Rolldown.
 import { ClientSideConnection } from "@zed-industries/agent-client-protocol/typescript/acp.ts";
 
 /** Shared output channel for human-readable logs. */

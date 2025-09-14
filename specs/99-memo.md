@@ -24,7 +24,7 @@
   - Minimal `requestPermission` via Quick Pick (`PermissionItem { optionId }`)
 - ACP library usage
   - Use official `@zed-industries/agent-client-protocol` (extension is ESM)
-  - Bundle TypeScript sources with tsup (esbuild, target node20) using `noExternal`
+  - Bundle TypeScript sources with tsdown (Rolldown, target node20) using `noExternal`
   - Import at runtime from `@zed-industries/agent-client-protocol/typescript/acp.ts`
 
 **Bridge / Mock**

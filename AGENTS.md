@@ -12,8 +12,8 @@
 ## Build, Test, and Development Commands
 
 - `pnpm install` – Install dependencies.
-- `pnpm build` – Type‑check then bundle with tsup (esbuild, target Node 20).
-- `pnpm watch` – tsup watch build.
+- `pnpm build` – Type‑check then bundle with tsdown (Rolldown, target Node 20).
+- `pnpm watch` – tsdown watch build.
 - Run locally: VS Code → Run and Debug → `Run Extension`.
 - Minimal E2E: set `ACP: Set Agent Path` to `tools/mock-agent.js`, run `ACP: Connect Agent` → `ACP: Send Prompt`.
 
@@ -37,5 +37,5 @@
 
 - Workspace Trust is required; file operations are restricted to absolute paths inside the opened workspace.
 - Be explicit with `acp.agentPath` and `acp.agentArgs`. Review external binaries you launch.
-- The ACP lib is imported from `@zed-industries/agent-client-protocol/typescript/acp.ts` and bundled via tsup (`noExternal`). If upstream ships `dist/`, you can switch to the package entry.
+- The ACP lib is imported from `@zed-industries/agent-client-protocol/typescript/acp.ts` and bundled via tsdown (`noExternal`). If upstream ships `dist/`, you can switch to the package entry.
 - Extension Host baseline: Node 20 (assumes VS Code 1.95+).

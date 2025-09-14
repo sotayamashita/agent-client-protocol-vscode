@@ -1,4 +1,4 @@
-import { defineConfig } from 'tsup';
+import { defineConfig } from 'tsdown';
 
 export default defineConfig({
   entry: ['src/extension.ts'],
@@ -6,7 +6,8 @@ export default defineConfig({
   platform: 'node',
   target: 'node20',
   outDir: 'out',
-  splitting: false, // produce a single file for VS Code main
+  // Produce a single file for VS Code main
+  splitting: false, 
   sourcemap: true,
   clean: true,
   treeshake: true,
@@ -14,5 +15,6 @@ export default defineConfig({
   // VS Code provides this at runtime; do not bundle
   external: ['vscode'],
   // Bundle the ACP library from TS sources in node_modules
-  noExternal: ['@zed-industries/agent-client-protocol'],
+  // Use a RegExp; tsdown only treats exact string matches as noExternal.
+  noExternal: [/^@zed-industries\/agent-client-protocol(\/|$)/],
 });

@@ -8,25 +8,6 @@ The goal is to demonstrate end‑to‑end connectivity between VS Code and an AC
 
 ACP standardizes communication between code editors and coding agents. It uses JSON‑RPC 2.0 messages over stdin/stdout. A typical prompt turn looks like:
 
-```mermaid
-sequenceDiagram
-    participant VSCode as VS Code Extension (Client)
-    participant Agent as Agent Process (Server)
-    Note over VSCode,Agent: JSON‑RPC 2.0 over stdin/stdout
-
-    VSCode->>Agent: initialize { protocolVersion, clientCapabilities }
-    Agent-->>VSCode: initialize.result { agentCapabilities, authMethods }
-
-    VSCode->>Agent: session/new { cwd, mcpServers }
-    Agent-->>VSCode: session/new.result { sessionId }
-
-    VSCode->>Agent: session/prompt { sessionId, prompt[] }
-    Agent-->>VSCode: session/update (agent_message_chunk ...)
-    Agent-->>VSCode: session/prompt.result { stopReason }
-
-    VSCode-->>Agent: session/cancel (optional)
-```
-
 - initialize → the client and agent exchange capabilities
 - session/new → the client creates a session (optionally passing cwd and MCP servers)
 - session/prompt → the client sends user input; the agent streams updates (session/update)
@@ -62,9 +43,9 @@ Scope and limitations:
 - This extension is ESM-based.
   - package.json: `"type": "module"`
   - tsconfig: `"module": "NodeNext"`, `"moduleResolution": "NodeNext"`, `"target": "ES2023"`
-- Bundling uses `tsup` (esbuild, target=Node20) and includes the ACP TS sources directly.
+- Bundling uses `tsdown` (Rolldown, target=Node20) and includes the ACP TS sources directly.
   - Import path: `@zed-industries/agent-client-protocol/typescript/acp.ts`
-  - `tsup` bundles this dependency (see `tsup.config.mjs: noExternal`).
+  - `tsdown` bundles this dependency (see `tsdown.config.mjs: noExternal`).
   - No files are written into `node_modules` during build.
 
 ## Build and Run (Extension Development Host)
@@ -86,7 +67,7 @@ pnpm install
 Tips
 
 - The launch configuration runs `pnpm build` as a preLaunchTask. If you run outside the debugger, execute `pnpm build` manually first.
-  - `pnpm build` performs TypeScript type-checking and then bundles with tsup.
+  - `pnpm build` performs TypeScript type-checking and then bundles with tsdown.
 
 ## Configuration
 
