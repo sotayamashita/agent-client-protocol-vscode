@@ -80,24 +80,6 @@ class VSCodeClient /* implements Client */ {
   }
 }
 
-function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    const t = setTimeout(() => {
-      reject(new Error(`${label} timeout after ${ms}ms`));
-    }, ms);
-    p.then(
-      (v) => {
-        clearTimeout(t);
-        resolve(v);
-      },
-      (e) => {
-        clearTimeout(t);
-        reject(e);
-      },
-    );
-  });
-}
-
 async function connectAgent(): Promise<void> {
   // Always bring Output to front for visibility
   output.show(true);
@@ -135,19 +117,10 @@ async function connectAgent(): Promise<void> {
     env: { ...process.env },
   });
   child = proc;
-  proc.once("spawn", () => {
-    output.appendLine(`[agent] spawned pid=${proc.pid ?? "n/a"}`);
-  });
   proc.stderr?.on("data", (buf: Buffer) => {
     const s = buf.toString("utf8");
     for (const line of s.split(/\r?\n/)) {
       if (line.trim().length) output.appendLine(`[agent/stderr] ${line}`);
-    }
-  });
-  proc.stdout?.on("data", (buf: Buffer) => {
-    const s = buf.toString("utf8");
-    for (const line of s.split(/\r?\n/)) {
-      if (line.trim().length) output.appendLine(`[agent/stdout] ${line}`);
     }
   });
 
@@ -175,15 +148,12 @@ async function connectAgent(): Promise<void> {
   };
   output.appendLine("[rpc] initialize");
   try {
-    await withTimeout(connection.initialize(initialize), 10000, "initialize");
+    await connection.initialize(initialize);
   } catch (e) {
     output.appendLine(`[rpc] initialize error: ${String(e)}`);
-    output.appendLine(
-      '[hint] エージェントが ACP/stdio を話していない可能性があります。acp.agentArgs に "--stdio" 等が必要か確認してください。',
-    );
     await disconnectAgent(false);
     vscode.window.showErrorMessage(
-      "ACP: initialize がタイムアウト/失敗しました。Output を確認してください。",
+      "ACP: initialize failed. Check the Output panel.",
     );
     return;
   }
@@ -193,16 +163,12 @@ async function connectAgent(): Promise<void> {
   output.appendLine(`[rpc] newSession cwd=${cwd}`);
   let newSessionRes: any;
   try {
-    newSessionRes = await withTimeout(
-      connection.newSession(newSession),
-      10000,
-      "newSession",
-    );
+    newSessionRes = await connection.newSession(newSession);
   } catch (e) {
     output.appendLine(`[rpc] newSession error: ${String(e)}`);
     await disconnectAgent(false);
     vscode.window.showErrorMessage(
-      "ACP: newSession がタイムアウト/失敗しました。Output を確認してください。",
+      "ACP: newSession failed. Check the Output panel.",
     );
     return;
   }
@@ -235,18 +201,6 @@ async function sendPrompt(): Promise<void> {
   } catch (err) {
     const e = err as any;
     output.appendLine(`[rpc] prompt error: ${e?.message ?? String(e)}`);
-    if (
-      e &&
-      typeof e === "object" &&
-      (e.code === -32000 || e.code === "AuthenticationRequired")
-    ) {
-      output.appendLine("[rpc] authenticate (stub)");
-      try {
-        await connection.authenticate?.({ methodId: "default" });
-      } catch (authErr) {
-        output.appendLine(`[rpc] authenticate error: ${String(authErr)}`);
-      }
-    }
   }
 }
 
@@ -292,26 +246,22 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.workspace.getConfiguration("acp").get<string[]>("agentArgs") ??
         [];
       const input = await vscode.window.showInputBox({
-        prompt: "Enter agent args (JSON array or space-separated)",
-        value: current.length ? JSON.stringify(current) : "",
+        prompt: "Enter agent args as JSON array (e.g. [\"--flag\",\"value\"])",
+        value: current.length ? JSON.stringify(current) : "[]",
+        validateInput: (val) => {
+          try {
+            const parsed = JSON.parse(val);
+            return Array.isArray(parsed) && parsed.every((a) => typeof a === "string")
+              ? null
+              : "Must be a JSON array of strings";
+          } catch {
+            return "Invalid JSON";
+          }
+        },
       });
       if (!input) return;
-      let args: string[] = [];
-      try {
-        const parsed = JSON.parse(input);
-        if (
-          Array.isArray(parsed) &&
-          parsed.every((a) => typeof a === "string")
-        ) {
-          args = parsed as string[];
-        } else {
-          throw new Error("not array");
-        }
-      } catch {
-        // fallback: naive split by whitespace
-        args =
-          input.match(/\".*?\"|\S+/g)?.map((s) => s.replaceAll('"', "")) ?? [];
-      }
+      const parsed = JSON.parse(input) as string[];
+      const args = parsed;
       await vscode.workspace
         .getConfiguration("acp")
         .update("agentArgs", args, vscode.ConfigurationTarget.Global);
