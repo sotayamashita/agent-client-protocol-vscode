@@ -57,6 +57,17 @@ Scope and limitations:
 - Node.js 18+ and pnpm
 - An ACP‑speaking agent binary; or use the included tools (mock/bridge) for local testing.
 
+## ESM + Library Integration
+
+- This extension is ESM-based.
+  - package.json: `"type": "module"`
+  - tsconfig: `"module": "NodeNext"`, `"moduleResolution": "NodeNext"`
+- Uses the official `@zed-industries/agent-client-protocol` TypeScript library.
+  - The package version used here doesn’t ship compiled `dist/` JS. To stay lightweight without a bundler, the build step transpiles only the needed files to ESM JS under `node_modules`:
+    - `tools/build-acp-lib.mjs` → generates `node_modules/@zed-industries/agent-client-protocol/typescript/{schema.js,acp.js}`
+  - The extension imports: `@zed-industries/agent-client-protocol/typescript/acp.js`.
+  - When the library ships compiled outputs, you can remove this step and import from the package entry point instead.
+
 ## Build and Run (Extension Development Host)
 
 1) Install dependencies
@@ -72,6 +83,10 @@ pnpm install
 - A new Extension Development Host window will open.
 
 3) Open the Output channel named "ACP" to view logs.
+
+Tips
+
+- The launch configuration runs `pnpm build` as a preLaunchTask. If you run outside the debugger, execute `pnpm build` manually first.
 
 ## Configuration
 
@@ -135,6 +150,7 @@ Notes
 - `@zed-industries/agent-client-protocol` — official ACP TypeScript library (transpiled on build).
 - `tools/mock-agent.js` — local mock ACP agent.
 - `tools/claude-acp-agent.js` — minimal ACP→Claude bridge agent.
+- `tools/build-acp-lib.mjs` — tiny helper to transpile ACP TS sources to ESM JS.
 
 ## License
 
