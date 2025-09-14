@@ -7,7 +7,7 @@
 - `.vscode/` – Debug and task configs (`Run Extension` launches an Extension Host).
 - `out/` – Build output (generated). Do not edit.
 - `node_modules/@zed-industries/agent-client-protocol/typescript/` – ACP library TypeScript sources (bundled directly; no generated JS is committed).
-- Docs: `01-spec.md`, `02-task.md`, `memo.md`.
+- Docs: `specs/01-spec.md`, `specs/99-memo.md`.
 
 ## Build, Test, and Development Commands
 
@@ -38,4 +38,4 @@
 - Workspace Trust is required; file operations are restricted to absolute paths inside the opened workspace.
 - Be explicit with `acp.agentPath` and `acp.agentArgs`. Review external binaries you launch.
 - The ACP lib is imported from `@zed-industries/agent-client-protocol/typescript/acp.ts` and bundled via tsup (`noExternal`). If upstream ships `dist/`, you can switch to the package entry.
-- Extension Host baseline: Node 20（VS Code 1.95+ を想定）。
+- Extension Host baseline: Node 20 (assumes VS Code 1.95+).
