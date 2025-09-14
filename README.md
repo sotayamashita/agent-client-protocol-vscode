@@ -53,16 +53,16 @@ Scope and limitations:
 
 ## Prerequisites
 
-- VS Code 1.88+ (Extension Development Host)
-- Node.js 18+ and pnpm
+- VS Code 1.95+ (Extension Development Host)
+- Node.js 20+ and pnpm
 - An ACP‑speaking agent binary; or use the included tools (mock/bridge) for local testing.
 
 ## ESM + Library Integration
 
 - This extension is ESM-based.
   - package.json: `"type": "module"`
-  - tsconfig: `"module": "NodeNext"`, `"moduleResolution": "NodeNext"`
-- Bundling uses `tsup` (esbuild) and includes the ACP TS sources directly.
+  - tsconfig: `"module": "NodeNext"`, `"moduleResolution": "NodeNext"`, `"target": "ES2023"`
+- Bundling uses `tsup` (esbuild, target=Node20) and includes the ACP TS sources directly.
   - Import path: `@zed-industries/agent-client-protocol/typescript/acp.ts`
   - `tsup` bundles this dependency (see `tsup.config.mjs: noExternal`).
   - No files are written into `node_modules` during build.

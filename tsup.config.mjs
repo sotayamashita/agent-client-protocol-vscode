@@ -4,7 +4,7 @@ export default defineConfig({
   entry: ['src/extension.ts'],
   format: ['esm'],
   platform: 'node',
-  target: 'node18',
+  target: 'node20',
   outDir: 'out',
   splitting: false, // produce a single file for VS Code main
   sourcemap: true,
@@ -16,4 +16,3 @@ export default defineConfig({
   // Bundle the ACP library from TS sources in node_modules
   noExternal: ['@zed-industries/agent-client-protocol'],
 });
-

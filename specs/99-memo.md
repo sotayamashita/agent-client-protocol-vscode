@@ -7,7 +7,7 @@
 **主な実装**
 - 拡張スキャフォールド一式
   - `package.json`（`main: ./out/src/extension.js`、`engines:^1.88.0`、`contributes.configuration`、`capabilities.untrustedWorkspaces`、コマンド群）
-  - `tsconfig.json`（`lib: [ES2022, DOM]`、`rootDir: .`、`include: vendor/**/*.ts`）
+  - `tsconfig.json`（`target: ES2023`、`lib: [ES2023, DOM]`、`rootDir: .`）
   - `.vscode/launch.json` / `.vscode/tasks.json` / `.gitignore` / `README.md`
 - コマンド
   - `acp.connect` / `acp.prompt` / `acp.cancel`
@@ -24,7 +24,7 @@
   - `requestPermission` は QuickPick（`PermissionItem{ optionId }`）で最低限
 - ACP ライブラリの扱い
   - 公式 `@zed-industries/agent-client-protocol` を利用（拡張は ESM）
-  - tsup（esbuild）で TS ソースを直接バンドル（`noExternal` 指定）
+  - tsup（esbuild, target: node20）で TS ソースを直接バンドル（`noExternal` 指定）
   - 実行時 import は `@zed-industries/agent-client-protocol/typescript/acp.ts`
 
 **ブリッジ/モック**
