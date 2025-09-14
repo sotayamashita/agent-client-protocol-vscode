@@ -4,7 +4,7 @@ Agent Client Protocol (ACP) 対応 VSCode 拡張機能開発仕様書
 
 この仕様書は、Agent Client Protocol (ACP) に対応したVSCode拡張機能の開発のための技術仕様を定義します <cite/>。ACPは、コードエディタとAIコーディングエージェント間の標準化された通信プロトコルです [1](#1-0) 。
 
-本拡張の対象エージェントは「Claude Code（Zed）」を想定します。ACP 準拠の Claude Code エージェント実行ファイル（またはラッパー）を子プロセスとして起動し、標準入出力で JSON‑RPC 通信します。実行ファイルのパス・引数・環境変数は拡張設定から指定します（例: `ANTHROPIC_API_KEY`）。
+本拡張の対象エージェントは「Claude Code（Zed）」を想定します。ACP 準拠の Claude Code エージェント実行ファイル（またはラッパー）を子プロセスとして起動し、標準入出力で JSON‑RPC 通信します。実行ファイルのパス・引数・環境変数は拡張設定から指定します。なお本環境では API キーは不要です。
 
 本環境ではエージェント実行パスの例として `/Users/sotayamashita/.claude/local/claude` を使用します。
 
@@ -141,7 +141,8 @@ import type { ReadableStream, WritableStream } from 'node:stream/web';
 const child = spawn(agentPath /* 例: /Users/sotayamashita/.claude/local/claude */, agentArgs, {
   stdio: ['pipe', 'pipe', 'inherit'],
   // 機密は OS 環境変数や VS Code SecretStorage から供給し、settings.json に保存しない
-  env: { ...process.env, ...agentEnv /* 例: { ANTHROPIC_API_KEY } */ },
+  // 本環境では追加の環境変数は不要
+  env: { ...process.env },
 });
 
 child.on('exit', (code, signal) => {
@@ -241,6 +242,7 @@ class VSCodeClient implements Client {
 - Claude（Anthropic）系バックエンド利用時は `ANTHROPIC_API_KEY` 等の環境変数が必要となる場合があります。
 - 機密は OS 環境変数や VS Code Secret Storage を用い、`settings.json` に保存しない方針とします。
 - 子プロセス起動時に `env` 経由で注入します。
+ - 本環境では API キーは不要です。
 
 ### 5. ストリーム管理
 
@@ -452,7 +454,7 @@ sequenceDiagram
 
 - 本拡張は ACP 準拠の Claude Code エージェントを対象にします。Zed が提供する「Claude Code」自体の配布形態や起動コマンドは環境に依存するため、ユーザーが `acp.agentPath` と `acp.agentArgs` を設定して利用します。
 - 公式な「Claude Code ACP エージェント」CLI がない場合は、組織/環境で用意したラッパーや OSS 実装（ACP `Agent` 実装）を指定してください。
-- 必要に応じて `ANTHROPIC_API_KEY` などを環境変数で注入します。
+- 本環境では API キーは不要です（必要な環境のみ環境変数を注入）。
 
 ## 実装例参考
 

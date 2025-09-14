@@ -15,7 +15,7 @@ ACP VS Code 拡張 縦スライス実装タスク（対象エージェント: Cl
 - 実行とログ取得
   - エージェント: `OutputChannel` 追加、JSON-RPC 送受信ログの整備（長さ制限/個人情報配慮）
 - あなた: VS Code で拡張を起動（Run Extension/F5）、`ACP: Connect Agent` 実行、手順と観測結果の共有
-  - あなた: （必要に応じて）`ANTHROPIC_API_KEY` を環境変数に設定して再起動
+  - あなた: 本環境では API キー設定は不要（必要な環境のみ設定）
   - あなた: エージェント実行ファイルに実行権限があるか確認（例: `chmod +x /Users/sotayamashita/.claude/local/claude`）
 - 検証シナリオ
   - エージェント: `initialize`→`newSession(mcpServers,cwd)`→`prompt`→`session/update`→`requestPermission`→`cancel` のチェックリスト提示
@@ -28,7 +28,7 @@ ACP VS Code 拡張 縦スライス実装タスク（対象エージェント: Cl
 - [ ] package.json 追加/更新（`main`、`engines.vscode:^1.88.0`、`activationEvents`、`contributes.commands`）
 - [ ] package.json `capabilities.untrustedWorkspaces` を `limited` 設定し `restrictedConfigurations` に `acp.agentPath`/`acp.agentArgs` を追加
 - [ ] 設定スキーマ追加（`contributes.configuration` に `acp.agentPath`/`acp.agentArgs`/`acp.mcpServers`）
-- [ ] Claude Code 用の設定入力（`acp.agentPath` に Claude Code ACP 実行パス、必要なら `acp.agentArgs` と環境変数）
+- [ ] Claude Code 用の設定入力（`acp.agentPath` に実行パス、必要に応じて `acp.agentArgs`。本環境では追加の環境変数は不要）
   - [ ] 本環境の例: `acp.agentPath = /Users/sotayamashita/.claude/local/claude`
 - [ ] `extension.ts` 作成：`activate` 実装、`OutputChannel` 生成、ワークスペース Trust チェック
 
@@ -36,7 +36,7 @@ ACP VS Code 拡張 縦スライス実装タスク（対象エージェント: Cl
 - [ ] `child_process.spawn` でエージェント起動（`stdio: ['pipe','pipe','inherit']`）
 - [ ] `Readable.toWeb`/`Writable.toWeb` で stdin/stdout を Web Streams に変換
 - [ ] 子プロセスの `exit/error` ハンドラ実装と後始末（deactivate/破棄時に確実に kill）
-  - [ ] （Claude Code）必要に応じて `ANTHROPIC_API_KEY` を `env` で注入
+  - [ ] （Claude Code）本環境では API キー不要（必要な環境のみ `env` 注入）
 
 ACP 接続と初期化
 - [ ] `VSCodeClient` 実装（`Client` インターフェース）
