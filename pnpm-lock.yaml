@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@zed-industries/agent-client-protocol':
-        specifier: ^0.2.3
-        version: 0.2.3
+        specifier: ^0.3.0
+        version: 0.3.0
       zod:
         specifier: ^4.1.8
         version: 4.1.8
@@ -46,8 +46,8 @@ packages:
   '@types/vscode@1.104.0':
     resolution: {integrity: sha512-0KwoU2rZ2ecsTGFxo4K1+f+AErRsYW0fsp6A0zufzGuhyczc2IoKqYqcwXidKXmy2u8YB2GsYsOtiI9Izx3Tig==}
 
-  '@zed-industries/agent-client-protocol@0.2.3':
-    resolution: {integrity: sha512-c0RbHWo3uVRnGc5Uo1eJDSSSpwadunwUiWXu/6YrE7GX46MiGOIzZbqXNKqpMo54u9Yfz+LdJHH1JY827Tn7yw==}
+  '@zed-industries/agent-client-protocol@0.3.0':
+    resolution: {integrity: sha512-p3zphM4liUAZAU9uDhTYXgYHieuYFcf7zB1lM4IH2/paNTpQmhV2c+a/t7VAinelSDihBcmf+Dn+a5jjs8AOCA==}
 
   detect-indent@7.0.1:
     resolution: {integrity: sha512-Mc7QhQ8s+cLrnUfU/Ji94vG/r8M26m8f++vyres4ZoojaRDpZ1eSIh/EpzLNwlWuvzSZ3UbDFspjFvTDXe6e/g==}
@@ -145,7 +145,7 @@ snapshots:
 
   '@types/vscode@1.104.0': {}
 
-  '@zed-industries/agent-client-protocol@0.2.3':
+  '@zed-industries/agent-client-protocol@0.3.0':
     dependencies:
       zod: 3.25.76
 

@@ -141,7 +141,7 @@ import type { ReadableStream, WritableStream } from "node:stream/web";
 
 // 設定から取得したエージェント実行パス/引数/環境変数
 const child = spawn(
-  agentPath /* 例: /Users/sotayamashita/.claude/local/claude */,
+  agentPath /* 例: ~/.claude/local/claude */,
   agentArgs,
   {
     stdio: ["pipe", "pipe", "inherit"],

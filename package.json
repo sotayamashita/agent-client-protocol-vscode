@@ -5,9 +5,6 @@
   "private": true,
   "description": "Agent Client Protocol (ACP) client for VS Code.",
   "type": "module",
-  "categories": [
-    "Other"
-  ],
   "main": "./out/src/extension.js",
   "scripts": {
     "build": "pnpm run build:acp-lib && tsc -p .",
@@ -55,7 +52,7 @@
       "properties": {
         "acp.agentPath": {
           "type": "string",
-          "description": "Claude Code (ACP) executable path (e.g., /Users/sotayamashita/.claude/local/claude)",
+          "description": "Claude Code (ACP) executable path (e.g., ~/.claude/local/claude)",
           "scope": "window"
         },
         "acp.agentArgs": {
@@ -91,7 +88,7 @@
     "onCommand:acp.showConfig"
   ],
   "dependencies": {
-    "@zed-industries/agent-client-protocol": "^0.2.3",
+    "@zed-industries/agent-client-protocol": "^0.3.0",
     "zod": "^4.1.8"
   },
   "devDependencies": {
