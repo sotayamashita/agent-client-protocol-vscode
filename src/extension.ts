@@ -1,22 +1,45 @@
+/**
+ * ACP VS Code extension entry: minimal client that connects to an
+ * ACP-compliant agent over stdio via ClientSideConnection. The implementation
+ * favors simplicity over features: small logs, no retries/timeouts, and
+ * workspace-scoped file access.
+ */
 import { spawn, type ChildProcess } from "node:child_process";
 import * as path from "node:path";
 import { Readable, Writable } from "node:stream";
 import * as vscode from "vscode";
 import { ClientSideConnection } from "@zed-industries/agent-client-protocol/typescript/acp.js";
 
+/** Shared output channel for human-readable logs. */
 let output: vscode.OutputChannel;
+/** Child process running the ACP agent (spawned on connect). */
 let child: ChildProcess | undefined;
-let connection: any | undefined; // ClientSideConnection instance
+/**
+ * Active JSON-RPC connection to the agent.
+ * Note: This is a ClientSideConnection instance; typed as `any` to
+ * avoid importing library types into the extension surface.
+ */
+let connection: any | undefined;
+/** Session identifier returned by `session/new` (if connected). */
 let currentSessionId: string | undefined;
 
+/** QuickPick item carrying the underlying ACP permission `optionId`. */
 interface PermissionItem extends vscode.QuickPickItem {
   optionId: string;
 }
 
+/**
+ * Returns the filesystem path of the first workspace folder, if present.
+ * Used as the CWD for ACP sessions and as an access boundary for FS methods.
+ */
 function getWorkspaceRoot(): string | undefined {
   return vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
 }
 
+/**
+ * Guards actions that require a trusted workspace (spawn, file writes).
+ * Shows a one-time warning and returns false if the workspace is untrusted.
+ */
 function ensureTrusted(): boolean {
   if (!vscode.workspace.isTrusted) {
     vscode.window.showWarningMessage(
@@ -27,6 +50,14 @@ function ensureTrusted(): boolean {
   return true;
 }
 
+/**
+ * Validates that `absPath` is absolute and within the workspace root directory.
+ * ACP requires absolute paths and this extension restricts access to the
+ * opened workspace for safety.
+ * @param absPath Absolute filesystem path provided by the agent.
+ * @returns VS Code `Uri` pointing at the validated path.
+ * @throws Error if the path is not absolute or outside the workspace.
+ */
 function assertAbsInsideWorkspace(absPath: string): vscode.Uri {
   if (!path.isAbsolute(absPath)) {
     throw new Error("Absolute paths are required by ACP.");
@@ -45,10 +76,19 @@ function assertAbsInsideWorkspace(absPath: string): vscode.Uri {
   return vscode.Uri.file(normFile);
 }
 
+/**
+ * Minimal ACP Client implementation bridged to VS Code UI and FS APIs.
+ * The agent invokes these methods via JSON-RPC.
+ */
 class VSCodeClient /* implements Client */ {
   constructor(private chan: vscode.OutputChannel) {}
 
   async requestPermission(params: any): Promise<any> {
+    /**
+     * Presents a single-choice permission dialog using QuickPick.
+     * @param params Object with `options: { optionId, name, description }[]`.
+     * @returns `{ outcome: { outcome: 'selected'|'cancelled', optionId? } }`.
+     */
     const items: PermissionItem[] = (params?.options ?? []).map((opt: any) => ({
       label: opt.name ?? opt.optionId,
       description: opt.description,
@@ -63,10 +103,16 @@ class VSCodeClient /* implements Client */ {
   }
 
   async sessionUpdate(params: any): Promise<void> {
+    /** Logs session/update notifications for visibility. */
     this.chan.appendLine(`[session/update] ${JSON.stringify(params)}`);
   }
 
   async writeTextFile(params: any): Promise<any> {
+    /**
+     * Writes UTF-8 text to the given absolute path inside the workspace.
+     * @param params Object with `path` (absolute) and `content` (string).
+     * @returns `null` per ACP WriteTextFileResponse.
+     */
     const uri = assertAbsInsideWorkspace(params.path);
     const data = Buffer.from(String(params.content ?? ""), "utf8");
     await vscode.workspace.fs.writeFile(uri, data);
@@ -74,12 +120,22 @@ class VSCodeClient /* implements Client */ {
   }
 
   async readTextFile(params: any): Promise<any> {
+    /**
+     * Reads UTF-8 text from the given absolute path inside the workspace.
+     * @param params Object with `path` (absolute).
+     * @returns `{ content: string }` per ACP ReadTextFileResponse.
+     */
     const uri = assertAbsInsideWorkspace(params.path);
     const content = await vscode.workspace.fs.readFile(uri);
     return { content: Buffer.from(content).toString("utf8") };
   }
 }
 
+/**
+ * Spawns the configured agent executable and establishes a JSON-RPC
+ * connection over stdio, then performs `initialize` and `newSession`.
+ * Stores the returned `sessionId` for subsequent calls.
+ */
 async function connectAgent(): Promise<void> {
   // Always bring Output to front for visibility
   output.show(true);
@@ -180,6 +236,10 @@ async function connectAgent(): Promise<void> {
   vscode.window.showInformationMessage("ACP: Connected");
 }
 
+/**
+ * Prompts the user for a text input and sends it to the agent via
+ * `session/prompt`, then logs the final response.
+ */
 async function sendPrompt(): Promise<void> {
   if (!connection || !currentSessionId) {
     vscode.window.showWarningMessage(
@@ -204,6 +264,7 @@ async function sendPrompt(): Promise<void> {
   }
 }
 
+/** Sends a `session/cancel` notification for the current session, if any. */
 async function cancelPrompt(): Promise<void> {
   if (!connection || !currentSessionId) return;
   output.appendLine("[rpc] cancel");
@@ -214,6 +275,10 @@ async function cancelPrompt(): Promise<void> {
   }
 }
 
+/**
+ * Tears down the active connection and attempts to stop the child process.
+ * @param showMsg When true, shows a user-facing notification.
+ */
 async function disconnectAgent(showMsg = true): Promise<void> {
   try {
     if (child && !child.killed) {
@@ -226,6 +291,10 @@ async function disconnectAgent(showMsg = true): Promise<void> {
   if (showMsg) vscode.window.showInformationMessage("ACP: Disconnected");
 }
 
+/**
+ * VS Code activation entry point. Creates the Output channel and registers
+ * all extension commands used to drive the ACP connection.
+ */
 export function activate(context: vscode.ExtensionContext) {
   output = vscode.window.createOutputChannel("ACP");
   context.subscriptions.push(output);
@@ -307,6 +376,7 @@ export function activate(context: vscode.ExtensionContext) {
   });
 }
 
+/** VS Code deactivation hook: best-effort termination of the child process. */
 export function deactivate() {
   if (child && !child.killed) {
     try {
