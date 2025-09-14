@@ -131,8 +131,3 @@ Notes
 - `@zed-industries/agent-client-protocol` — official ACP TypeScript library (bundled from TS sources).
 - `tools/mock-agent.js` — local mock ACP agent.
 - `tools/claude-acp-agent.js` — minimal ACP→Claude bridge agent.
-  
-
-## License
-
-This is a PoC for experimentation and evaluation. No warranty; APIs and behavior may change.
