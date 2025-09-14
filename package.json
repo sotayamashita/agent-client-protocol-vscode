@@ -1,0 +1,112 @@
+{
+  "name": "acp-vscode",
+  "displayName": "ACP VS Code",
+  "description": "Agent Client Protocol (ACP) client for VS Code.",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./out/src/extension.js",
+  "engines": {
+    "vscode": "^1.88.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:acp.connect",
+    "onCommand:acp.prompt",
+    "onCommand:acp.cancel",
+    "onCommand:acp.setAgentPath",
+    "onCommand:acp.disconnect",
+    "onCommand:acp.reconnect",
+    "onCommand:acp.setAgentArgs",
+    "onCommand:acp.showConfig"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "acp.connect",
+        "title": "ACP: Connect Agent"
+      },
+      {
+        "command": "acp.prompt",
+        "title": "ACP: Send Prompt"
+      },
+      {
+        "command": "acp.cancel",
+        "title": "ACP: Cancel Prompt"
+      },
+      {
+        "command": "acp.setAgentPath",
+        "title": "ACP: Set Agent Path"
+      },
+      {
+        "command": "acp.disconnect",
+        "title": "ACP: Disconnect Agent"
+      },
+      {
+        "command": "acp.reconnect",
+        "title": "ACP: Reconnect Agent"
+      },
+      {
+        "command": "acp.setAgentArgs",
+        "title": "ACP: Set Agent Args"
+      },
+      {
+        "command": "acp.showConfig",
+        "title": "ACP: Show Config"
+      }
+    ],
+    "configuration": {
+      "title": "ACP",
+      "properties": {
+        "acp.agentPath": {
+          "type": "string",
+          "description": "Claude Code (ACP) executable path (e.g., /Users/sotayamashita/.claude/local/claude)",
+          "scope": "window"
+        },
+        "acp.agentArgs": {
+          "type": "array",
+          "description": "Agent launch arguments.",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "scope": "window"
+        },
+        "acp.mcpServers": {
+          "type": "array",
+          "description": "MCP server configurations (if any).",
+          "items": {
+            "type": "object"
+          },
+          "default": [],
+          "scope": "window"
+        }
+      }
+    }
+  },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "restrictedConfigurations": [
+        "acp.agentPath",
+        "acp.agentArgs"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "tsc -p .",
+    "watch": "tsc -watch -p .",
+    "compile": "pnpm run build"
+  },
+  "dependencies": {
+    "@zed-industries/agent-client-protocol": "^0.2.3",
+    "zod": "^4.1.8"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.3",
+    "@types/vscode": "^1.88.0",
+    "typescript": "^5.9.2"
+  }
+}
