@@ -6,14 +6,14 @@
 - `tools/` – Local agents for E2E checks: `mock-agent.js`, `claude-acp-agent.js` (both ESM).
 - `.vscode/` – Debug and task configs (`Run Extension` launches an Extension Host).
 - `out/` – Build output (generated). Do not edit.
-- `node_modules/@zed-industries/agent-client-protocol/typescript/` – ACP library sources; build step generates `acp.js` and `schema.js` here for runtime import.
+- `node_modules/@zed-industries/agent-client-protocol/typescript/` – ACP library TypeScript sources (bundled directly; no generated JS is committed).
 - Docs: `01-spec.md`, `02-task.md`, `memo.md`.
 
 ## Build, Test, and Development Commands
 
 - `pnpm install` – Install dependencies.
-- `pnpm build` – Transpile ACP TS → ESM JS, then compile extension.
-- `pnpm watch` – TypeScript watch build.
+- `pnpm build` – Type‑check then bundle with tsup (esbuild).
+- `pnpm watch` – tsup watch build.
 - Run locally: VS Code → Run and Debug → `Run Extension`.
 - Minimal E2E: set `ACP: Set Agent Path` to `tools/mock-agent.js`, run `ACP: Connect Agent` → `ACP: Send Prompt`.
 
@@ -37,4 +37,4 @@
 
 - Workspace Trust is required; file operations are restricted to absolute paths inside the opened workspace.
 - Be explicit with `acp.agentPath` and `acp.agentArgs`. Review external binaries you launch.
-- The ACP lib is imported from `@zed-industries/agent-client-protocol/typescript/acp.js`. If upstream ships `dist/`, simplify imports and drop the build helper.
+- The ACP lib is imported from `@zed-industries/agent-client-protocol/typescript/acp.ts` and bundled via tsup (`noExternal`). If upstream ships `dist/`, you can switch to the package entry.

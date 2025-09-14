@@ -62,11 +62,10 @@ Scope and limitations:
 - This extension is ESM-based.
   - package.json: `"type": "module"`
   - tsconfig: `"module": "NodeNext"`, `"moduleResolution": "NodeNext"`
-- Uses the official `@zed-industries/agent-client-protocol` TypeScript library.
-  - The package version used here doesn’t ship compiled `dist/` JS. To stay lightweight without a bundler, the build step transpiles only the needed files to ESM JS under `node_modules`:
-    - `tools/build-acp-lib.mjs` → generates `node_modules/@zed-industries/agent-client-protocol/typescript/{schema.js,acp.js}`
-  - The extension imports: `@zed-industries/agent-client-protocol/typescript/acp.js`.
-  - When the library ships compiled outputs, you can remove this step and import from the package entry point instead.
+- Bundling uses `tsup` (esbuild) and includes the ACP TS sources directly.
+  - Import path: `@zed-industries/agent-client-protocol/typescript/acp.ts`
+  - `tsup` bundles this dependency (see `tsup.config.mjs: noExternal`).
+  - No files are written into `node_modules` during build.
 
 ## Build and Run (Extension Development Host)
 
@@ -87,6 +86,7 @@ pnpm install
 Tips
 
 - The launch configuration runs `pnpm build` as a preLaunchTask. If you run outside the debugger, execute `pnpm build` manually first.
+  - `pnpm build` performs TypeScript type-checking and then bundles with tsup.
 
 ## Configuration
 
@@ -147,10 +147,10 @@ Notes
 ## Project Structure (high‑level)
 
 - `src/extension.ts` — VS Code activation, commands, ACP wiring, Output logging.
-- `@zed-industries/agent-client-protocol` — official ACP TypeScript library (transpiled on build).
+- `@zed-industries/agent-client-protocol` — official ACP TypeScript library (bundled from TS sources).
 - `tools/mock-agent.js` — local mock ACP agent.
 - `tools/claude-acp-agent.js` — minimal ACP→Claude bridge agent.
-- `tools/build-acp-lib.mjs` — tiny helper to transpile ACP TS sources to ESM JS.
+  
 
 ## License
 

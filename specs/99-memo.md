@@ -23,9 +23,9 @@
   - 絶対パスのみ許可＋ワークスペース外ブロック
   - `requestPermission` は QuickPick（`PermissionItem{ optionId }`）で最低限
 - ACP ライブラリの扱い
-  - 公式 `@zed-industries/agent-client-protocol` を利用（拡張は ESM 化）
-  - `tools/build-acp-lib.mjs` で必要ファイル（`typescript/acp.ts`,`typescript/schema.ts`）を ESM に簡易トランスパイル
-  - 実行時は `@zed-industries/agent-client-protocol/typescript/acp.js` を import
+  - 公式 `@zed-industries/agent-client-protocol` を利用（拡張は ESM）
+  - tsup（esbuild）で TS ソースを直接バンドル（`noExternal` 指定）
+  - 実行時 import は `@zed-industries/agent-client-protocol/typescript/acp.ts`
 
 **ブリッジ/モック**
 - `tools/mock-agent.js`
@@ -51,7 +51,7 @@
 
 **既知の落とし穴**
 - `agentArgs` を空白区切りで書くとパスが壊れることがある → JSON 配列で入力。
-- `main` のパスズレ（`out/extension.js` vs `out/src/extension.js`）→ manifest 修正済み。
+- `main` のパス（バンドル後は `out/extension.js`）を manifest に合わせる。
 - pnpm の store 不整合 → `pnpm install` or `pnpm config set store-dir ...` で解消。
 - TypeScript: `ChildProcessWithoutNullStreams` 型ズレ → `ChildProcess` に変更し安全にアクセス。
 
