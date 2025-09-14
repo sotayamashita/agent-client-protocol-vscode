@@ -4,9 +4,9 @@
 // - Runs `claude -p --output-format json <prompt>` per turn
 // - Streams a single agent_message_chunk with the final text, then end_turn
 
-const { spawn } = require("node:child_process");
-const readline = require("node:readline");
-const path = require("node:path");
+import { spawn } from "node:child_process";
+import * as readline from "node:readline";
+import * as path from "node:path";
 
 function log(...a) {
   try {

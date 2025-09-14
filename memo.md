@@ -22,10 +22,10 @@
   - `readTextFile` / `writeTextFile`（UTF-8）
   - 絶対パスのみ許可＋ワークスペース外ブロック
   - `requestPermission` は QuickPick（`PermissionItem{ optionId }`）で最低限
-- Vendor（ACP TS 実装）
-  - `vendor/acp/acp.ts` / `vendor/acp/schema.ts`（Zed 本家から移植）
-  - zod v4 互換のため `z.record(z.unknown())` → `z.record(z.string(), z.unknown())` に統一
-  - Node Web Streams 型＆ import を調整
+- ACP ライブラリの扱い
+  - 公式 `@zed-industries/agent-client-protocol` を利用（拡張は ESM 化）
+  - `tools/build-acp-lib.mjs` で必要ファイル（`typescript/acp.ts`,`typescript/schema.ts`）を ESM に簡易トランスパイル
+  - 実行時は `@zed-industries/agent-client-protocol/typescript/acp.js` を import
 
 **ブリッジ/モック**
 - `tools/mock-agent.js`

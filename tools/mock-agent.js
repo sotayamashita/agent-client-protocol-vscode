@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Minimal ACP mock agent for local testing (JSON-RPC over stdio, newline-delimited)
-const readline = require("node:readline");
+import * as readline from "node:readline";
 
 const rl = readline.createInterface({
   input: process.stdin,

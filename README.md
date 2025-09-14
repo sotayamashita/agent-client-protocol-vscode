@@ -132,7 +132,7 @@ Notes
 ## Project Structure (high‑level)
 
 - `src/extension.ts` — VS Code activation, commands, ACP wiring, Output logging.
-- `vendor/acp/*` — embedded TypeScript implementation of ACP client/agent classes and schemas.
+- `@zed-industries/agent-client-protocol` — official ACP TypeScript library (transpiled on build).
 - `tools/mock-agent.js` — local mock ACP agent.
 - `tools/claude-acp-agent.js` — minimal ACP→Claude bridge agent.
 

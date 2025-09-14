@@ -1,9 +1,8 @@
 import { spawn, type ChildProcess } from "node:child_process";
 import * as path from "node:path";
 import { Readable, Writable } from "node:stream";
-import type { ReadableStream, WritableStream } from "node:stream/web";
 import * as vscode from "vscode";
-import { ClientSideConnection } from "../vendor/acp/acp";
+import { ClientSideConnection } from "@zed-industries/agent-client-protocol/typescript/acp.js";
 
 let output: vscode.OutputChannel;
 let child: ChildProcess | undefined;
@@ -160,8 +159,8 @@ async function connectAgent(): Promise<void> {
     output.appendLine(`[agent] error: ${String(err)}`);
   });
 
-  const toAgent: WritableStream<Uint8Array> = Writable.toWeb(proc.stdin!);
-  const fromAgent: ReadableStream<Uint8Array> = Readable.toWeb(proc.stdout!);
+  const toAgent = Writable.toWeb(proc.stdin!) as unknown as WritableStream<Uint8Array>;
+  const fromAgent = Readable.toWeb(proc.stdout!) as unknown as ReadableStream<Uint8Array>;
 
   // The constructor signature follows the spec: (toClient, input, output)
   connection = new ClientSideConnection(

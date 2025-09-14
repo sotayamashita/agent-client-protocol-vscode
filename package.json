@@ -4,12 +4,14 @@
   "version": "0.0.1",
   "private": true,
   "description": "Agent Client Protocol (ACP) client for VS Code.",
+  "type": "module",
   "categories": [
     "Other"
   ],
   "main": "./out/src/extension.js",
   "scripts": {
-    "build": "tsc -p .",
+    "build": "pnpm run build:acp-lib && tsc -p .",
+    "build:acp-lib": "node tools/build-acp-lib.mjs",
     "compile": "pnpm run build",
     "watch": "tsc -watch -p ."
   },

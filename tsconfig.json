@@ -1,17 +1,20 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "commonjs",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "lib": ["ES2022", "DOM"],
     "outDir": "out",
     "rootDir": ".",
     "strict": true,
-    "moduleResolution": "node",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "sourceMap": true,
     "resolveJsonModule": true
   },
-  "include": ["src/**/*.ts", "vendor/**/*.ts"],
-  "exclude": ["node_modules", ".vscode-test"]
+  "include": [
+    "src/**/*.ts",
+    "node_modules/@zed-industries/agent-client-protocol/typescript/**/*.ts"
+  ],
+  "exclude": ["node_modules"]
 }
